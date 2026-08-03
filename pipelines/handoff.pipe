@@ -12,7 +12,7 @@
       "provider": "extract_data",
       "config": {
         "profile": "default",
-        "apikey": "${OPENAI_API_KEY}",
+        "apikey": "${ROCKETRIDE_OPENAI_KEY}",
         "fields": [
           {
             "name": "mechanism",
@@ -43,8 +43,8 @@
       "id": "distil_note",
       "provider": "llm_openai",
       "config": {
-        "profile": "openai-4o-mini",
-        "apikey": "${OPENAI_API_KEY}",
+        "profile": "openai-5-4-mini",
+        "apikey": "${ROCKETRIDE_OPENAI_KEY}",
         "system": "You are Handoff's memory. Given a departing engineer's exit-interview answer and the knowledge extracted from it, write the durable handover note in the third person, capturing the mechanism she described so the next owner inherits the reasoning and not just the artifact. Two sentences, no preamble. If the answer was insufficient, say plainly what is still unknown and must be asked in the human handover meeting."
       },
       "input": [
@@ -62,7 +62,10 @@
           "lane": "answers",
           "from": "distil_note"
         }
-      ]
+      ],
+      "config": {}
     }
-  ]
+  ],
+  "source": "answer_in",
+  "version": 1
 }

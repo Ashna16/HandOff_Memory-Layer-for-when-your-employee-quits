@@ -1,3 +1,8 @@
+> **Verified on RocketRide Cloud** — this pipeline deploys and starts on the
+> managed engine at `https://api.rocketride.ai` (real task token returned), and
+> is saved to the account as the `handoff-rescue` template. The LLM nodes run
+> once an OpenAI key is set in the account's LLM/BYOK settings.
+
 # RocketRide pipeline — `handoff.pipe`
 
 A portable RocketRide pipeline (`.pipe`, JSON) that captures Handoff's reasoning
