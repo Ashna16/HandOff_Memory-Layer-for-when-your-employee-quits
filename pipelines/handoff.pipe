@@ -1,0 +1,68 @@
+{
+  "project_id": "handoff-rescue",
+  "description": "Handoff's reasoning layer as a portable RocketRide pipeline. A departing engineer's exit-interview answer comes in on the webhook; the pipeline extracts the durable knowledge from it (the mechanism, not the assertion), grades whether it is usable by whoever inherits the system, and synthesises the handover note that gets written back into memory. This is the same LLM work the Handoff app performs when it grades answers and distils them into the knowledge graph.",
+  "components": [
+    {
+      "id": "answer_in",
+      "provider": "webhook",
+      "config": {}
+    },
+    {
+      "id": "extract_knowledge",
+      "provider": "extract_data",
+      "config": {
+        "profile": "default",
+        "apikey": "${OPENAI_API_KEY}",
+        "fields": [
+          {
+            "name": "mechanism",
+            "description": "The concrete mechanism or trade-off the engineer described — what actually happens, not the conclusion. Empty if the answer only asserts a result."
+          },
+          {
+            "name": "sufficient",
+            "description": "true only if an engineer who has never seen this system could act on the answer; false for vague appeals to experience."
+          },
+          {
+            "name": "concepts",
+            "description": "The load-bearing concepts the answer names, comma-separated (e.g. dedupe, backpressure, offset)."
+          },
+          {
+            "name": "follow_up",
+            "description": "The single sharpest question to press the engineer on if the answer is insufficient; empty otherwise."
+          }
+        ]
+      },
+      "input": [
+        {
+          "lane": "text",
+          "from": "answer_in"
+        }
+      ]
+    },
+    {
+      "id": "distil_note",
+      "provider": "llm_openai",
+      "config": {
+        "profile": "openai-4o-mini",
+        "apikey": "${OPENAI_API_KEY}",
+        "system": "You are Handoff's memory. Given a departing engineer's exit-interview answer and the knowledge extracted from it, write the durable handover note in the third person, capturing the mechanism she described so the next owner inherits the reasoning and not just the artifact. Two sentences, no preamble. If the answer was insufficient, say plainly what is still unknown and must be asked in the human handover meeting."
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "extract_knowledge"
+        }
+      ]
+    },
+    {
+      "id": "handover_out",
+      "provider": "response",
+      "input": [
+        {
+          "lane": "answers",
+          "from": "distil_note"
+        }
+      ]
+    }
+  ]
+}
