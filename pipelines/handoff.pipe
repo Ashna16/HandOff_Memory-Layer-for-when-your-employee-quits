@@ -1,71 +1,80 @@
 {
   "project_id": "handoff-rescue",
-  "description": "Handoff's reasoning layer as a portable RocketRide pipeline. A departing engineer's exit-interview answer comes in on the webhook; the pipeline extracts the durable knowledge from it (the mechanism, not the assertion), grades whether it is usable by whoever inherits the system, and synthesises the handover note that gets written back into memory. This is the same LLM work the Handoff app performs when it grades answers and distils them into the knowledge graph.",
+  "version": 1,
+  "viewport": { "x": 0, "y": 0, "zoom": 1 },
   "components": [
     {
       "id": "answer_in",
       "provider": "webhook",
-      "config": {}
+      "name": "Exit-interview answer",
+      "config": {
+        "hideForm": true,
+        "mode": "Source",
+        "parameters": {},
+        "type": "webhook"
+      },
+      "ui": {
+        "position": { "x": 40, "y": 240 },
+        "measured": { "width": 150, "height": 66 },
+        "nodeType": "default",
+        "formDataValid": true
+      }
     },
     {
-      "id": "extract_knowledge",
-      "provider": "extract_data",
+      "id": "grade_prompt",
+      "provider": "prompt",
+      "name": "Grade & frame",
       "config": {
-        "profile": "default",
-        "apikey": "${ROCKETRIDE_OPENAI_KEY}",
-        "fields": [
-          {
-            "name": "mechanism",
-            "description": "The concrete mechanism or trade-off the engineer described — what actually happens, not the conclusion. Empty if the answer only asserts a result."
-          },
-          {
-            "name": "sufficient",
-            "description": "true only if an engineer who has never seen this system could act on the answer; false for vague appeals to experience."
-          },
-          {
-            "name": "concepts",
-            "description": "The load-bearing concepts the answer names, comma-separated (e.g. dedupe, backpressure, offset)."
-          },
-          {
-            "name": "follow_up",
-            "description": "The single sharpest question to press the engineer on if the answer is insufficient; empty otherwise."
-          }
-        ]
+        "instructions": [
+          "You are Handoff's memory. A departing engineer has just answered a question in her exit interview. Decide whether her answer is usable by whoever inherits the system: it must name the actual mechanism or trade-off, not merely assert a conclusion. Then write the durable handover note in the third person, capturing the mechanism she described so the next owner inherits the reasoning and not just the artifact. Two sentences. If the answer is too thin to act on, say plainly what is still unknown and must be asked in the human handover meeting."
+        ],
+        "parameters": {}
       },
       "input": [
-        {
-          "lane": "text",
-          "from": "answer_in"
-        }
-      ]
+        { "lane": "questions", "from": "answer_in" }
+      ],
+      "ui": {
+        "position": { "x": 300, "y": 240 },
+        "measured": { "width": 150, "height": 66 },
+        "nodeType": "default",
+        "formDataValid": true
+      }
     },
     {
       "id": "distil_note",
       "provider": "llm_openai",
+      "name": "Distil handover note",
       "config": {
-        "profile": "openai-5-4-mini",
-        "apikey": "${ROCKETRIDE_OPENAI_KEY}",
-        "system": "You are Handoff's memory. Given a departing engineer's exit-interview answer and the knowledge extracted from it, write the durable handover note in the third person, capturing the mechanism she described so the next owner inherits the reasoning and not just the artifact. Two sentences, no preamble. If the answer was insufficient, say plainly what is still unknown and must be asked in the human handover meeting."
+        "profile": "openai-4o-mini",
+        "openai-4o-mini": {
+          "apikey": "${ROCKETRIDE_OPENAI_KEY}"
+        },
+        "parameters": {}
       },
       "input": [
-        {
-          "lane": "questions",
-          "from": "extract_knowledge"
-        }
-      ]
+        { "lane": "questions", "from": "grade_prompt" }
+      ],
+      "ui": {
+        "position": { "x": 560, "y": 240 },
+        "measured": { "width": 150, "height": 66 },
+        "nodeType": "default",
+        "formDataValid": true
+      }
     },
     {
       "id": "handover_out",
-      "provider": "response",
+      "provider": "response_answers",
+      "name": "Handover note -> memory",
+      "config": { "laneName": "answers" },
       "input": [
-        {
-          "lane": "answers",
-          "from": "distil_note"
-        }
+        { "lane": "answers", "from": "distil_note" }
       ],
-      "config": {}
+      "ui": {
+        "position": { "x": 820, "y": 240 },
+        "measured": { "width": 150, "height": 66 },
+        "nodeType": "default",
+        "formDataValid": true
+      }
     }
-  ],
-  "source": "answer_in",
-  "version": 1
+  ]
 }
