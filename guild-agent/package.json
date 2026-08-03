@@ -1,0 +1,38 @@
+{
+  "name": "@guildai/ashnaparekh1998~handoff-rescuer",
+  "version": "1.0.4",
+  "author": "Guild.ai",
+  "type": "module",
+  "exports": {
+    ".": "./dist/agent.compiled.js"
+  },
+  "scripts": {
+    "build": "npm run build:compile && npm run build:transform && npm run build:copy",
+    "build:compile": "tsc --build",
+    "build:transform": "babel ./dist/agent.js --out-dir ./dist --out-file-extension .compiled.js --plugins @guildai/babel-plugin-agent-compiler",
+    "build:copy": "cp *.md dist/",
+    "bundle": "npm run build && esbuild dist/agent.compiled.js --bundle --loader:.md=text --platform=node --format=esm --external:zod --external:@guildai/agents-sdk | gzip | base64 > agent.js.gz",
+    "clean": "tsc --build --clean && rm -rf dist node_modules package-lock.json",
+    "format": "prettier --log-level warn --write .",
+    "format:check": "prettier --log-level warn --check ."
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@guildai/babel-plugin-agent-compiler": "*",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@guildai-services/guildai~jira": "^2.0.1",
+    "@guildai-services/guildai~slack": "^2.1.1",
+    "@guildai-services/guildlabs~gmail-oauth": "^1.0.0",
+    "@guildai-services/guildlabs~google-calendar-oauth": "^1.0.0",
+    "@guildai/agents-sdk": "*",
+    "zod": "^4.3.0"
+  },
+  "files": [
+    "./dist/**/*.js",
+    "./dist/**/*.d.ts",
+    "./dist/**/*.md"
+  ]
+}

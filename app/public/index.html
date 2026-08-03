@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Handoff — institutional memory, rescued</title>
+<link rel="stylesheet" href="/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%238c3b28'/></svg>" />
+</head>
+<body>
+
+<!-- ── cold open ─────────────────────────────────────────────────────────── -->
+<section id="gate" class="gate">
+  <div class="gate-inner">
+    <div class="wordmark">HANDOFF</div>
+    <h1 class="gate-title">Every company has a Sarah.</h1>
+    <p class="gate-sub">
+      When she resigns, the repo keeps what she made. Nothing keeps how she thinks.<br />
+      Type a name to find out what leaves with them.
+    </p>
+    <form id="gate-form" class="gate-form" autocomplete="off">
+      <input id="subject-input" class="gate-input" value="Sarah Chen" spellcheck="false" aria-label="Employee name" />
+      <button class="gate-go" type="submit">Trace<span class="go-arrow">→</span></button>
+    </form>
+    <div id="roster" class="roster"></div>
+    <div class="gate-foot">
+      <span id="gate-mode" class="pill">replay</span>
+      <span class="gate-foot-note">Memory Meets Motion · Frontier Tower · 03 Aug 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── main ──────────────────────────────────────────────────────────────── -->
+<main id="stage" class="stage" hidden>
+
+  <header class="head">
+    <div class="head-left">
+      <span class="wordmark small">HANDOFF</span>
+      <div class="subject">
+        <strong id="subject-name">—</strong>
+        <span id="subject-role" class="dim">—</span>
+      </div>
+    </div>
+    <div class="head-right">
+      <div class="countdown">
+        <span id="countdown-days">—</span>
+        <span class="countdown-label">days until<br />last day</span>
+      </div>
+      <div id="sponsors" class="sponsors"></div>
+      <button id="btn-memory" class="btn memory-btn" type="button">
+        <span class="mem-glyph">◈</span> ask memory
+      </button>
+    </div>
+  </header>
+
+  <!-- the staged flow: each button unlocks when the previous phase lands -->
+  <nav id="stagebar" class="stagebar">
+    <div class="stage-steps">
+      <button class="stage-btn" id="ph-analyze" data-phase="analyze" disabled type="button">
+        <span class="sn">1</span>
+        <span class="sl">start handoff<em>FalkorDB studies her world</em></span>
+      </button>
+      <span class="stage-link"></span>
+      <button class="stage-btn" id="ph-interview" data-phase="interview" disabled type="button">
+        <span class="sn">2</span>
+        <span class="sl">voice interview<em>ask her why, out loud</em></span>
+      </button>
+      <span class="stage-link"></span>
+      <button class="stage-btn" id="ph-meetings" data-phase="meetings" disabled type="button">
+        <span class="sn">3</span>
+        <span class="sl">generate meetings<em>invites, pre-briefed, via Guild</em></span>
+      </button>
+      <span class="stage-link"></span>
+      <button class="stage-btn" id="ph-jiras" data-phase="jiras" disabled type="button">
+        <span class="sn">4</span>
+        <span class="sl">hand off jira<em>her tickets get new names</em></span>
+      </button>
+    </div>
+    <div class="stage-side">
+      <button class="btn ghost plan-peek" id="btn-plan-meetings" hidden type="button">
+        scheduled meetings <b id="plan-meet-count">0</b>
+      </button>
+      <button class="btn ghost plan-peek" id="btn-plan-jiras" hidden type="button">
+        jira handoffs <b id="plan-jira-count">0</b>
+      </button>
+    </div>
+  </nav>
+
+  <!-- the drafted rescue plan — reviewable before anything fires -->
+  <aside id="plan" class="plan" hidden>
+    <div class="plan-head">
+      <div>
+        <div class="plan-title">the rescue plan</div>
+        <div class="plan-sub dim">drafted by the Rescuer from the graph — nothing executes until you press the button</div>
+      </div>
+      <button id="btn-plan-close" class="btn ghost" type="button">close</button>
+    </div>
+    <div id="plan-body" class="plan-body"></div>
+  </aside>
+
+  <!-- chat over everything in memory -->
+  <aside id="memory" class="memory" hidden>
+    <div class="memory-head">
+      <div>
+        <div class="memory-title">ask memory</div>
+        <div id="memory-engine" class="memory-engine dim">graph + vector retrieval</div>
+      </div>
+      <button id="btn-memory-close" class="btn ghost" type="button">close</button>
+    </div>
+    <div id="memory-log" class="memory-log">
+      <div class="memory-empty">
+        <p>Everything the agents learned is queryable — the graph, her commits, the tickets, and every answer she gave in the exit interview.</p>
+        <div class="suggestions">
+          <button>If Marcus takes over the ranking pipeline tomorrow, what is he most likely to get wrong?</button>
+          <button>What does Sarah know that nobody has written down?</button>
+          <button>Why does the weekly refresh cron run at 03:07?</button>
+          <button>What breaks first if she leaves on Friday?</button>
+        </div>
+      </div>
+    </div>
+    <form id="memory-form" class="memory-form" autocomplete="off">
+      <input id="memory-input" placeholder="Ask anything about what she knows…" spellcheck="false" />
+      <button type="submit" class="btn primary">ask</button>
+    </form>
+  </aside>
+
+  <div class="body">
+
+    <!-- graph -->
+    <section class="graph-wrap">
+      <canvas id="graph"></canvas>
+      <div class="graph-overlay">
+        <div class="overlay-top">
+          <div class="atrisk">
+            <span id="atrisk-count">0</span>
+            <span class="atrisk-label">things die with her</span>
+          </div>
+          <div id="engine-badge" class="engine-badge" title="Which engine answered the last query">
+            <span class="dot"></span><span id="engine-text">in-process graph</span>
+          </div>
+        </div>
+        <div class="overlay-bottom">
+          <div id="cypher" class="cypher" hidden>
+            <div class="cypher-head">the query that turns the screen red</div>
+            <pre id="cypher-text"></pre>
+          </div>
+          <!-- her record: what she has actually been doing, month by month -->
+          <div id="history" class="history" hidden>
+            <div class="history-head">
+              <span class="history-title">her record</span>
+              <span id="history-caption" class="dim"></span>
+            </div>
+            <svg id="history-plot" class="history-plot" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div class="history-axis">
+              <span id="history-from"></span>
+              <span id="history-legend" class="dim"></span>
+              <span id="history-to"></span>
+            </div>
+          </div>
+
+          <div class="legend">
+            <!-- Swatches are the marks themselves, shape included, so the legend
+                 teaches the shape encoding and not only the colour. -->
+            <span>
+              <svg class="sw" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="8" cy="8" r="6.5" fill="var(--risk)"/>
+                <circle cx="8" cy="8" r="3.4" fill="none" stroke="var(--paper)" stroke-width="1.6"/>
+              </svg>Solo-owned — dies with her
+            </span>
+            <span>
+              <svg class="sw" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="8" cy="8" r="6.5" fill="var(--sched)"/>
+                <path d="M3.8 5.6 A5 5 0 0 1 12.2 5.6" fill="none" stroke="var(--paper)" stroke-width="1.8"/>
+              </svg>No written trace — must be asked
+            </span>
+            <span>
+              <svg class="sw" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="8" cy="8" r="6.5" fill="var(--ok)"/>
+                <circle cx="8" cy="8" r="2.9" fill="var(--paper)"/>
+              </svg>Preserved
+            </span>
+            <span>
+              <svg class="sw" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="8" cy="8" r="4.6" fill="var(--neutral)"/>
+              </svg>Shared with others
+            </span>
+          </div>
+        </div>
+      </div>
+      <div id="node-tip" class="node-tip" hidden></div>
+    </section>
+
+    <!-- rail -->
+    <aside class="rail">
+
+      <div class="meter">
+        <div class="meter-head">
+          <span class="label">knowledge coverage</span>
+          <span id="coverage-delta" class="delta"></span>
+        </div>
+        <div class="meter-value"><span id="coverage-pct">—</span><span class="pct">%</span></div>
+        <div class="meter-track">
+          <div id="meter-projected" class="meter-projected"></div>
+          <div id="meter-fill" class="meter-fill"></div>
+        </div>
+        <div class="meter-foot">
+          <span id="coverage-detail" class="dim">—</span>
+          <span id="coverage-ceiling" class="dim"></span>
+        </div>
+      </div>
+
+      <!-- what the graph is working out, as it works it out -->
+      <div class="derive">
+        <div class="section-label">
+          what FalkorDB found
+          <span class="dim" id="derive-status">idle</span>
+        </div>
+        <div id="derive-list" class="derive-list">
+          <div class="derive-empty dim">Press <b>start handoff</b> and every derivation lands here as the graph is queried.</div>
+        </div>
+      </div>
+
+      <!-- RocketRide's orchestration, made visible: the pipeline it sequences -->
+      <div class="pipeline">
+        <div class="section-label">
+          RocketRide pipeline
+          <span class="dim" id="pipeline-where">local harness</span>
+        </div>
+        <div id="pipeline-steps" class="pipeline-steps"></div>
+      </div>
+
+      <div class="metrics" id="metrics"></div>
+
+      <div class="agents">
+        <div class="section-label">the guild <span class="dim">· four specialists, one human</span></div>
+        <div id="agent-strip" class="agent-strip"></div>
+        <div id="agent-charter" class="agent-charter dim"></div>
+      </div>
+
+      <div class="feed-wrap">
+        <div class="section-label">
+          live stream <span class="dim" id="feed-transport">· in-process</span>
+          <span id="feed-count" class="feed-count">0</span>
+        </div>
+        <div id="feed" class="feed"></div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- interview dock -->
+  <section id="dock" class="dock" hidden>
+    <div class="dock-head">
+      <div class="dock-title">
+        <span class="rec"></span>
+        exit interview
+        <span class="dim" id="dock-progress"></span>
+      </div>
+      <div class="dock-actions">
+        <button id="btn-mode" class="btn ghost" type="button">type instead</button>
+        <button id="btn-skip" class="btn ghost" type="button">skip</button>
+        <button id="btn-end" class="btn ghost" type="button">end</button>
+      </div>
+    </div>
+    <div class="dock-body">
+      <div class="q-side">
+        <div class="q-label">the agent asks</div>
+        <div id="question" class="question">—</div>
+        <div id="q-meta" class="q-meta dim"></div>
+      </div>
+      <div class="a-side">
+        <div class="q-label">she answers</div>
+        <div id="transcript" class="transcript" contenteditable="false"></div>
+        <textarea id="answer-box" class="answer-box" placeholder="Type her answer…" hidden></textarea>
+        <div class="a-actions">
+          <button id="btn-mic" class="btn primary" type="button"><span class="mic-dot"></span><span id="mic-label">hold to answer</span></button>
+          <button id="btn-use-answer" class="btn" type="button">use her answer <kbd>↵</kbd></button>
+          <button id="btn-submit" class="btn" type="button" hidden>submit answer</button>
+          <span id="answer-hint" class="dim"></span>
+        </div>
+        <!-- Presenter crib sheet: her real answer, ready to submit with one key.
+             Speak to override it, or just press Enter. Hidden from a live audience
+             view by the muted styling; it is a teleprompter, not a claim. -->
+        <div id="crib" class="crib" hidden>
+          <div class="crib-label">her answer <span class="dim">— press <kbd>↵</kbd> to enter it, or speak to override</span></div>
+          <div id="crib-text" class="crib-text"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- approval gate -->
+  <div id="approval" class="approval" hidden>
+    <div class="approval-card">
+      <div class="approval-tag">human approval required</div>
+      <h2 id="approval-title">—</h2>
+      <p id="approval-detail" class="dim">—</p>
+      <pre id="approval-body" class="approval-body"></pre>
+      <div class="approval-actions">
+        <button id="btn-reject" class="btn" type="button">reject</button>
+        <button id="btn-approve" class="btn primary" type="button">approve</button>
+      </div>
+      <div class="approval-foot dim">The Rescuer will not execute this without a person. Everything else it did on its own.</div>
+    </div>
+  </div>
+
+  <!-- closing card -->
+  <div id="closer" class="closer" hidden>
+    <div class="closer-inner">
+      <div class="closer-num"><span id="closer-from">61</span><span class="arrow">→</span><span id="closer-to">94</span><span class="pct">%</span></div>
+      <div class="closer-line">Git gave us version control for code.<br />Handoff is version control for the knowledge in people's heads.</div>
+      <div id="closer-stats" class="closer-stats"></div>
+      <button id="btn-closer-dismiss" class="btn ghost" type="button">back</button>
+    </div>
+  </div>
+
+</main>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>

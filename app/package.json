@@ -1,0 +1,26 @@
+{
+  "name": "handoff",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Institutional memory, rescued before it walks out the door. Memory Meets Motion hackathon, SF, Aug 3 2026.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node lib/seed.js",
+    "live": "HANDOFF_MODE=live node server.js",
+    "demo": "HANDOFF_FALKOR_MODE=live HANDOFF_LASER_MODE=live HANDOFF_ROCKETRIDE_MODE=live node server.js",
+    "demo:jira": "GUILD_LIVE_JIRA=on HANDOFF_FALKOR_MODE=live HANDOFF_LASER_MODE=live HANDOFF_ROCKETRIDE_MODE=live node server.js",
+    "containers": "docker start falkordb iggy || (docker run -d --name falkordb -p 6379:6379 -p 3000:3000 falkordb/falkordb && docker run -d --name iggy --security-opt seccomp=unconfined -e IGGY_HTTP_ADDRESS=0.0.0.0:3000 -e IGGY_TCP_ADDRESS=0.0.0.0:8090 -p 3001:3000 -p 8090:8090 apache/iggy:latest)",
+    "smoke": "node scripts/smoke.js",
+    "eval": "node scripts/grade-eval.js",
+    "mcp": "node mcp/server.js",
+    "falkor": "docker run --rm -p 6379:6379 falkordb/falkordb:latest"
+  },
+  "dependencies": {
+    "rocketride": "^1.3.0"
+  }
+}

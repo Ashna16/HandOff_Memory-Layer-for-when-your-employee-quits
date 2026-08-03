@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Handoff — theme options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    background: #2a2a2a; padding: 24px; -webkit-font-smoothing: antialiased;
+  }
+  .opt-label {
+    color: #999; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    margin: 26px 0 8px; font-family: ui-monospace, Menlo, monospace;
+  }
+  .opt-label b { color: #fff; letter-spacing: 0.06em; text-transform: none; font-size: 14px; }
+
+  /* Each theme is a scoped block; only the custom properties change. */
+  .t { --mono: ui-monospace, 'SF Mono', Menlo, monospace;
+       border-radius: 3px; overflow: hidden; background: var(--surface); color: var(--ink); }
+
+  .navy {
+    --surface:#111823; --panel:#161F2C; --line:rgba(255,255,255,.10); --soft:rgba(255,255,255,.05);
+    --ink:#E8ECF2; --muted:#8A97A8; --dimmer:#5D6B7D;
+    --risk:#E5484D; --sched:#F0A72E; --ok:#30A46C; --neutral:#3E4C5E;
+  }
+  .graphite {
+    --surface:#1A1917; --panel:#22201D; --line:rgba(255,255,255,.10); --soft:rgba(255,255,255,.05);
+    --ink:#F0EDE7; --muted:#96908A; --dimmer:#6B6560;
+    --risk:#D03B3B; --sched:#FAB219; --ok:#0CA30C; --neutral:#4A4642;
+  }
+  .paper {
+    --surface:#F2EFE9; --panel:#E9E5DD; --line:rgba(0,0,0,.14); --soft:rgba(0,0,0,.07);
+    --ink:#14130F; --muted:#6B665C; --dimmer:#8A857A;
+    --risk:#C2333A; --sched:#9A6206; --ok:#0A7D34; --neutral:#B3AEA3;
+  }
+
+  .head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--line);
+  }
+  .wm { font-size:10px; letter-spacing:.34em; color:var(--muted); font-weight:600; }
+  .subj { display:flex; align-items:baseline; gap:10px; margin-left:22px; }
+  .subj strong { font-size:17px; letter-spacing:-.02em; }
+  .subj span { font-size:12px; color:var(--muted); }
+  .hl { display:flex; align-items:center; }
+  .hr { display:flex; align-items:center; gap:20px; }
+  .cd { display:flex; align-items:center; gap:8px; }
+  .cd b { font-size:26px; color:var(--risk); letter-spacing:-.04em; font-weight:600; }
+  .cd span { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; line-height:1.2; }
+  .sp { display:flex; gap:5px; }
+  .sp i { font-style:normal; font-family:var(--mono); font-size:9px; letter-spacing:.06em;
+          border:1px solid var(--soft); padding:4px 7px; border-radius:2px; color:var(--dimmer); }
+
+  .body { display:grid; grid-template-columns:1fr 330px; min-height:250px; }
+  .plot { position:relative; border-right:1px solid var(--line); padding:16px 18px; }
+  .big { display:flex; align-items:baseline; gap:9px; }
+  .big b { font-size:40px; color:var(--risk); letter-spacing:-.05em; line-height:1; font-weight:600; }
+  .big span { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; max-width:90px; line-height:1.25; }
+  svg.g { position:absolute; inset:0; width:100%; height:100%; }
+  .legend { position:absolute; left:18px; bottom:14px; display:flex; gap:14px; font-size:10px; color:var(--muted); }
+  .legend span { display:inline-flex; align-items:center; gap:5px; }
+
+  .rail { background:var(--panel); }
+  .meter { padding:15px 18px 14px; border-bottom:1px solid var(--line); }
+  .lab { font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+  .mv { display:flex; align-items:baseline; gap:2px; margin:6px 0 10px; }
+  .mv b { font-size:44px; letter-spacing:-.055em; line-height:1; font-weight:600; }
+  .mv i { font-style:normal; font-size:16px; color:var(--muted); }
+  .track { position:relative; height:3px; background:var(--soft); }
+  .fill { position:absolute; inset:0 auto 0 0; width:74%; background:var(--ink); }
+  .proj { position:absolute; inset:0 auto 0 0; width:95%; background:var(--ok); opacity:.32; }
+  .mf { display:flex; justify-content:space-between; margin-top:7px; font-size:10px; font-family:var(--mono); color:var(--muted); }
+
+  .mets { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:1px solid var(--line); }
+  .met { padding:11px 10px 11px 18px; border-right:1px solid var(--soft); }
+  .met:nth-child(3) { border-right:0; }
+  .met b { display:block; font-size:18px; letter-spacing:-.03em; font-weight:600; }
+  .met span { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+
+  .feed { padding:13px 18px; }
+  .ev { padding:8px 0; border-bottom:1px solid var(--soft); display:grid; grid-template-columns:44px 1fr; gap:9px; }
+  .ev time { font-family:var(--mono); font-size:9px; color:var(--dimmer); }
+  .tag { font-family:var(--mono); font-size:8px; letter-spacing:.09em; text-transform:uppercase;
+         border:1px solid var(--line); padding:1px 4px; border-radius:2px; color:var(--muted); margin-right:5px; }
+  .ttl { font-size:12px; line-height:1.35; }
+  .ttl.crit { color:var(--risk); }
+  .ttl.good { color:var(--ok); }
+  .det { font-size:10.5px; color:var(--muted); line-height:1.45; margin-top:2px; }
+</style>
+</head>
+<body>
+<div id="out"></div>
+
+<script>
+const THEMES = [
+  ['navy',     'A · Deep slate-navy',  'enterprise / financial terminal · graph glow STRONG'],
+  ['graphite', 'B · Warm graphite',    'gallery / editorial · graph glow STRONG'],
+  ['paper',    'C · Warm paper',       'printed technical document · graph glow NONE'],
+];
+
+// One deterministic node cluster, drawn identically in every theme so the only
+// variable is the surface it sits on.
+function cluster(seed) {
+  let a = seed;
+  const rnd = () => (a = (a * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  const states = [];
+  for (let i = 0; i < 74; i++) {
+    const r = rnd();
+    states.push(r < 0.11 ? 'risk' : r < 0.20 ? 'sched' : r < 0.245 ? 'ok' : 'neutral');
+  }
+  return states.map((s, i) => ({
+    s,
+    x: 8 + rnd() * 84,
+    y: 12 + rnd() * 74,
+    r: s === 'neutral' ? 0.9 + rnd() * 1.5 : 1.7 + rnd() * 1.4,
+  }));
+}
+const NODES = cluster(20260803);
+
+function mark(n) {
+  const c = `var(--${n.s})`;
+  const cx = n.x, cy = n.y, r = n.r;
+  let inner = '';
+  if (n.s === 'risk')  inner = `<circle cx="${cx}" cy="${cy}" r="${r * 0.5}" fill="none" stroke="var(--surface)" stroke-width="${r * 0.34}"/>`;
+  if (n.s === 'ok')    inner = `<circle cx="${cx}" cy="${cy}" r="${r * 0.42}" fill="var(--surface)"/>`;
+  if (n.s === 'sched') inner = `<path d="M ${cx - r * 0.66} ${cy - r * 0.38} A ${r * 0.75} ${r * 0.75} 0 0 1 ${cx + r * 0.66} ${cy - r * 0.38}" fill="none" stroke="var(--surface)" stroke-width="${r * 0.3}"/>`;
+  return `<circle cx="${cx}" cy="${cy}" r="${r + 0.45}" fill="var(--surface)"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}"/>${inner}`;
+}
+
+const edges = [];
+for (let i = 0; i < NODES.length; i += 3) {
+  const a = NODES[i], b = NODES[(i * 7 + 11) % NODES.length];
+  edges.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--ink)" stroke-opacity="0.08" stroke-width="0.18"/>`);
+}
+
+const swatch = (s) => {
+  const inner = s === 'risk' ? '<circle cx="8" cy="8" r="3.4" fill="none" stroke="var(--surface)" stroke-width="1.6"/>'
+    : s === 'ok' ? '<circle cx="8" cy="8" r="2.9" fill="var(--surface)"/>'
+    : s === 'sched' ? '<path d="M3.8 5.6 A5 5 0 0 1 12.2 5.6" fill="none" stroke="var(--surface)" stroke-width="1.8"/>' : '';
+  const rad = s === 'neutral' ? 4.6 : 6.5;
+  return `<svg width="13" height="13" viewBox="0 0 16 16"><circle cx="8" cy="8" r="${rad}" fill="var(--${s})"/>${inner}</svg>`;
+};
+
+document.getElementById('out').innerHTML = THEMES.map(([cls, name, note]) => `
+  <div class="opt-label"><b>${name}</b> &nbsp;·&nbsp; ${note}</div>
+  <div class="t ${cls}">
+    <div class="head">
+      <div class="hl"><span class="wm">HANDOFF</span>
+        <div class="subj"><strong>Sarah Chen</strong><span>Staff Engineer, Personalization</span></div>
+      </div>
+      <div class="hr">
+        <div class="cd"><b>9</b><span>days until<br>last day</span></div>
+        <div class="sp"><i>FALKORDB</i><i>ROCKETRIDE</i><i>GUILD</i><i>LASERDATA</i></div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="plot">
+        <svg class="g" viewBox="0 0 100 100" preserveAspectRatio="none">${edges.join('')}</svg>
+        <svg class="g" viewBox="0 0 100 100">${NODES.map(mark).join('')}</svg>
+        <div class="big"><b>19</b><span>things die with her</span></div>
+        <div class="legend">
+          <span>${swatch('risk')}only she has touched it</span>
+          <span>${swatch('sched')}transfer booked</span>
+          <span>${swatch('ok')}rescued</span>
+          <span>${swatch('neutral')}has a second owner</span>
+        </div>
+      </div>
+      <div class="rail">
+        <div class="meter">
+          <div class="lab">knowledge coverage</div>
+          <div class="mv"><b>74</b><i>%</i></div>
+          <div class="track"><div class="proj"></div><div class="fill"></div></div>
+          <div class="mf"><span>205 / 276 weighted</span><span>ceiling 95%</span></div>
+        </div>
+        <div class="mets">
+          <div class="met"><b>121</b><span>nodes</span></div>
+          <div class="met"><b>361</b><span>relationships</span></div>
+          <div class="met"><b>11</b><span>solo-owned</span></div>
+        </div>
+        <div class="feed">
+          <div class="ev"><time>23:10:28</time><div>
+            <div class="ttl crit"><span class="tag">risk</span>11 assets have one human edge</div>
+            <div class="det">answered by FalkorDB — every one dies with her</div></div></div>
+          <div class="ev"><time>23:10:31</time><div>
+            <div class="ttl"><span class="tag">action</span>Handover ticket filed — DW-1841</div>
+            <div class="det">DW-4404 · guild · simulated</div></div></div>
+          <div class="ev"><time>23:10:34</time><div>
+            <div class="ttl good"><span class="tag">rescued</span>Why the cron runs at 03:07</div>
+            <div class="det">weekly_refresh_cron.py now has a recorded answer</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+`).join('');
+</script>
+</body>
+</html>

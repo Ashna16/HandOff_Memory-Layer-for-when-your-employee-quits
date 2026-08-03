@@ -1,0 +1,6 @@
+/* Self-hosted so venue wifi can never take the typeface away.
+   Regenerate with scratchpad/fonts.mjs. */
+@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/cormorant-400.woff2') format('woff2');}
+@font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/cormorant-600.woff2') format('woff2');}
+@font-face{font-family:'Lora';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/lora-400.woff2') format('woff2');}
+@font-face{font-family:'Lora';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/lora-600.woff2') format('woff2');}
